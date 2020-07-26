@@ -50,7 +50,6 @@ import java.util.Map;
 /**
  * Created by du on 16/12/29.
  */
-
 public class DWebView extends WebView {
     private static final String BRIDGE_NAME = "_dsbridge";
     private static final String LOG_TAG = "dsBridge";

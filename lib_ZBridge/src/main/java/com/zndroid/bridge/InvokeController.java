@@ -21,10 +21,12 @@ import com.zndroid.bridge.api.impl.DebugAPI;
 import com.zndroid.bridge.api.impl.NativeAPI;
 import com.zndroid.bridge.framework.ZWebView;
 import com.zndroid.bridge.framework.ZWebViewClient;
+import com.zndroid.bridge.framework.core.DWebView;
 import com.zndroid.bridge.params.Message;
 import com.zndroid.bridge.util.SPUtil;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Map;
 
 /**
@@ -41,8 +43,8 @@ public class InvokeController {
     private boolean isDebug = BuildConfig.DEBUG;
     private PageLoadListener pageLoadListener;
 
-    private Context context;
-    private Activity activity;
+    private WeakReference<Context> context;
+    private WeakReference<Activity> activity;
     private ZWebView webView;
 
     private NativeAPI nativeAPI;
@@ -91,9 +93,7 @@ public class InvokeController {
         this.isDebug = isDebug;
     }
 
-    /** 如果有上下文activity变化，请更新当前活动上下文activity*/
-    public void setActivity(Activity activity) {
-        this.activity = activity;
+    private void initAPI(Activity activity) {
         nativeAPI = new NativeAPI(activity);
         commonAPI = new CommonAPI(activity);
         commonAPI.setWebView(webView);
@@ -102,27 +102,25 @@ public class InvokeController {
         injectAPI();//注入API
     }
 
-    public void onCreate(Bundle savedInstanceState) {
-        if (null != nativeAPI)
-            nativeAPI.onCreate(savedInstanceState);
-    }
-
     public void onSaveInstanceState(Bundle outState) {
         nativeAPI.onSaveInstanceState(outState);
     }
 
     /** 初始化并注入交互API*/
-    public void init(Context context, @NonNull ZWebView webView) {
-        this.context = context.getApplicationContext();
+    public void onCreate(Activity activity, @NonNull ZWebView webView) {
+        this.context = new WeakReference<>(activity.getApplicationContext());
+        this.activity = new WeakReference<>(activity);
+
         this.webView = webView;
 
         MessageController.get().setDebug(isDebug);
 
         if (isHasScript()) {//检测初始化状态
             if (isDebug)
-                webView.setWebContentsDebuggingEnabled(true);
+                DWebView.setWebContentsDebuggingEnabled(true);
 
             initWebView();
+            initAPI(this.activity.get());
         } else {
             Log.e(TAG, "The file 'dsbridge.js' not exist");
         }
@@ -196,7 +194,7 @@ public class InvokeController {
 
     private boolean isHasScript() {
         try {
-            String[] fileNames = context.getResources().getAssets().list("");
+            String[] fileNames = context.get().getResources().getAssets().list("");
             if (fileNames != null) {
                 for (String s: fileNames) {
                     if (_js_script_file.equals(s))
@@ -275,7 +273,7 @@ public class InvokeController {
 //            }
 
             if (!webView.canGoBack() && null != activity)
-                activity.finish();
+                activity.get().finish();
         }
     }
 
