@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-cmn-Hans">
+    <meta charset="UTF-8">
+    <title>DSBridge Test</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=0.5,user-scalable=no"/>
+    <!--require dsbridge init js-->
+    <!--<script src="https://cdn.jsdelivr.net/npm/dsbridge/dist/dsbridge.js"> </script>-->
+    <script src="./dist/dsbridge.js"> </script>
+</head>
+<style>
+    .btn {
+        text-align: center;
+        background: #d8d8d8;
+        color: #222;
+        padding: 20px;
+        margin: 30px;
+        font-size: 24px;
+        border-radius: 4px;
+        box-shadow: 4px 2px 10px #999;
+    }
+
+    .btn:active {
+        opacity: .7;
+        box-shadow: 4px 2px 10px #555;
+    }
+
+</style>
+<body>
+<h2>-------native-------</h2>
+<div class="btn" onclick="mac()">mac</div>
+<div class="btn" onclick="getIMEI()">getIMEI</div>
+<div class="btn" onclick="getIMSI()">getIMSI</div>
+<div class="btn" onclick="packageName()">packageName</div>
+<div class="btn" onclick="versionCode()">versionCode</div>
+<div class="btn" onclick="versionName()">versionName</div>
+<div class="btn" onclick="picture()">picture</div>
+<div class="btn" onclick="camera()">camera</div>
+<div class="btn" onclick="_location()">location</div>
+<div class="btn" onclick="isUSBAttached()">isUSBAttached</div>
+<div class="btn" onclick="restartApp()">restartApp</div>
+<div class="btn" onclick="getAppCacheSize()">getAppCacheSize</div>
+<div class="btn" onclick="clearAppCache()">clearAppCache</div>
+<div class="btn" onclick="saveLocalData()">saveLocalData</div>
+<div class="btn" onclick="getLocalData()">getLocalData</div>
+<div class="btn" onclick="isGPSOpen()">isGPSOpen</div>
+<div class="btn" onclick="openGPS()">openOrCloseGPS</div>
+<div class="btn" onclick="callPhone()">callPhone</div>
+<div class="btn" onclick="sendSMS()">sendSMS</div>
+<div class="btn" onclick="getBSInfo()">getBSInfo</div>
+
+<h2>-------YC-------</h2>
+<div class="btn" onclick="setUserId()">setUserId</div>
+<div class="btn" onclick="setDeviceType()">setDeviceType</div>
+<div class="btn" onclick="startSniffer()">startSniffer</div>
+<div class="btn" onclick="stopSniffer()">stopSniffer</div>
+<div class="btn" onclick="getSnifferData()">getSnifferData</div>
+
+<h2>-------common-------</h2>
+<div class="btn" onclick="openBrowser()">openBrowser</div>
+<div class="btn" onclick="download_apk()">download_apk</div>
+<div class="btn" onclick="showToast()">showToast</div>
+<div class="btn" onclick="showSnackBar()">showSnackBar</div>
+<div class="btn" onclick="activityFinish()">activityFinish</div>
+<div class="btn" onclick="isInstall()">isInstall</div>
+
+<h2>-------wifi-------</h2>
+<div class="btn" onclick="startScanWiFi()">startScanWiFi</div>
+<div class="btn" onclick="stopScanWiFi()">stopScanWiFi</div>
+<div class="btn" onclick="getScanWiFiData()">getScanWiFiData</div>
+
+<h2>-------navigation-------</h2>
+<div class="btn" onclick="getNavigationCategory()">getNavigationCategory</div>
+<div class="btn" onclick="navigationTo()">navigationTo</div>
+
+<h2>-------ascend-------</h2>
+<div class="btn" onclick="connect()">connect</div>
+<div class="btn" onclick="disconnect()">disconnect</div>
+<div class="btn" onclick="getScanData()">getScanData</div>
+<div class="btn" onclick="getHardVersion()">getHardVersion</div>
+<div class="btn" onclick="getDevElectric()">getDevElectric</div>
+<div class="btn" onclick="setUploadFrequency()">setUploadFrequency</div>
+<div class="btn" onclick="openFixMacMonitor()">openFixMacMonitor</div>
+<div class="btn" onclick="closeFixMacMonitor()">closeFixMacMonitor</div>
+<div class="btn" onclick="openVirtualIDMonitor()">openVirtualIDMonitor</div>
+<div class="btn" onclick="closeVirtualIDMonitor()">closeVirtualIDMonitor</div>
+<div class="btn" onclick="startFastScan()">startFastScan</div>
+<div class="btn" onclick="stopFastScan()">stopFastScan</div>
+<div class="btn" onclick="startCrackApPsw()">startCrackApPsw</div>
+<div class="btn" onclick="stopCrackApPsw()">stopCrackApPsw</div>
+<div class="btn" onclick="openApInduce()">openApInduce</div>
+<div class="btn" onclick="closeApInduce()">closeApInduce</div>
+<div class="btn" onclick="getSMSControls()">getSMSControls</div>
+<div class="btn" onclick="setSMSControl()">setSMSControl</div>
+<div class="btn" onclick="deleteSMSControl()">deleteSMSControl</div>
+<div class="btn" onclick="getMoveWarn()">getMoveWarn</div>
+<div class="btn" onclick="setMoveWarn()">setMoveWarn</div>
+<div class="btn" onclick="deleteMoveWarn()">deleteMoveWarn</div>
+
+<h2>-------QR code-------</h2>
+<div class="btn" onclick="scanQRCode()">scanQRCode</div>
+<div class="btn" onclick="createQRCode()">createQRCode</div>
+<div class="btn" onclick="createBarCode()">createBarCode</div>
+
+<h2>-------debug-------</h2>
+<div class="btn" onclick="Test1()">Test1</div>
+<div class="btn" onclick="Test2()">Test2</div>
+<div class="btn" onclick="permission()">permission</div>
+
+<script>
+
+    ////////////////// native //////////////////
+    function isGPSOpen() {
+        console.log(dsBridge.call("native.isGPSOpen"));
+    }
+
+    function getBSInfo() {
+        console.log(dsBridge.call("native.getBSInfo"));
+    }
+
+    function openGPS() {
+        dsBridge.call("native.openOrCloseGPS");
+    }
+
+    function callPhone() {
+        dsBridge.call("native.callPhone", '1383838338');
+    }
+
+    function sendSMS() {
+        dsBridge.call("native.sendSMS", '{"pn":"1383838338","message":"im message content.........."}');
+    }
+
+    function mac() {
+        console.log(dsBridge.call("native.getMac"));
+    }
+
+    function saveLocalData() {
+        dsBridge.call("native.saveLocalData", '{"key":"my_key","value":123}');
+    }
+
+    function getLocalData() {
+        console.log(dsBridge.call("native.getLocalData",'{"key":"my_key","default_value":1}'));
+    }
+
+    function getAppCacheSize() {
+        console.log(dsBridge.call("native.getAppCacheSize"));
+    }
+
+    function clearAppCache() {
+        dsBridge.call("native.clearAppCache")
+    }
+
+    function restartApp() {
+        console.log(dsBridge.call("native.restartApp"));
+    }
+
+    function isUSBAttached() {
+        console.log(dsBridge.call("native.isUSBAttached"));
+    }
+
+    function _location() {
+        console.log(dsBridge.call("native.getLocation"));
+    }
+
+    function picture() {
+        dsBridge.call("native.openGallery", function(value) {
+            console.log(value)
+        });
+    }
+
+    function camera() {
+        dsBridge.call("native.openCamera", function(value) {
+            console.log(value)
+        });
+    }
+
+    function getIMEI() {
+        console.log(dsBridge.call("native.getIMEI"));
+    }
+
+    function getIMSI() {
+        console.log(dsBridge.call("native.getIMSI"));
+    }
+
+    function versionCode() {
+        console.log(dsBridge.call("native.getVersionCode"));
+    }
+
+    function packageName() {
+        console.log(dsBridge.call("native.getPackageName"));
+    }
+
+    function versionName() {
+        console.log(dsBridge.call("native.getVersionName"));
+    }
+
+    ////////////////// YC //////////////////
+    function setDeviceType() {
+        dsBridge.call("YC.setDeviceType", 1);
+    }
+
+    function setUserId() {
+        dsBridge.call("YC.setUserId", 'test uid');
+    }
+
+    function startSniffer() {
+        dsBridge.call("YC.startSniffer", '12:34:56:78:90:12');
+    }
+
+    function stopSniffer() {
+        dsBridge.call("YC.stopSniffer");
+    }
+
+    function getSnifferData() {
+        dsBridge.call("YC.getSnifferData", '{"offset":1, "count":10}');
+    }
+
+    ////////////////// common //////////////////
+    function openBrowser() {
+        dsBridge.call("common.openBrowser", 'http://192.168.0.1');
+    }
+
+    function activityFinish() {
+        dsBridge.call("common.activityFinish");
+    }
+
+    function isInstall() {
+        console.log(dsBridge.call("common.isInstall", 'com.clouds.xk'));
+    }
+
+    function showToast() {
+        dsBridge.call("common.showToast", false);
+    }
+
+    function showSnackBar() {
+        dsBridge.call("common.showSnackBar", '{"type":0,"message":"im message content...","action":"确定"}', function(){
+            console.log("completed...");
+        });
+    }
+    function download_apk() {
+        dsBridge.call("common.downloadApk", 'http://down-ww2.newasp.net/soft/7/90/com.generdal.rhgawd.aownd_eec2a470.apk');
+        //dsBridge.call("common.downloadApk", 'https://qd.myapp.com/myapp/qqteam/AndroidQQ/mobileqq_android.apk');
+    }
+
+    ////////////////// wifi //////////////////
+    function startScanWiFi() {
+        dsBridge.call("wifi.startScanWiFi");
+    }
+
+    function stopScanWiFi() {
+        dsBridge.call("wifi.stopScanWiFi");
+    }
+
+    function getScanWiFiData() {
+        console.log(dsBridge.call("wifi.getScanWiFiData"));
+    }
+
+    ////////////////// navigation //////////////////
+    function getNavigationCategory() {
+        console.log(dsBridge.call("navigation.getNavigationCategory"))
+    }
+
+    function navigationTo() {
+        dsBridge.call("navigation.navigationTo", '{"type":2, "latitude":39.5209922936, "longitude":112.0825195313, "aimAddress":"山西省朔州市平鲁区304省道"}')
+    }
+
+    ////////////////// ascend //////////////////
+    function connect() {
+        dsBridge.call("ascend.connect", 3, function(value) {
+               console.log(value)
+        })
+    }
+
+    function disconnect() {
+        dsBridge.call("ascend.disconnect")
+    }
+
+    function getScanData() {
+        console.log(dsBridge.call("ascend.getScanData"))
+    }
+
+    function getHardVersion() {
+        dsBridge.call("ascend.getHardVersion", function(value) {
+               console.log(value)
+        })
+    }
+
+    function getDevElectric() {
+        dsBridge.call("ascend.getDevElectric", function(value) {
+               console.log(value)
+        })
+    }
+
+    function setUploadFrequency() {
+        dsBridge.call("ascend.setUploadFrequency", '30000')
+    }
+
+    function openFixMacMonitor() {
+        dsBridge.call("ascend.openFixMacMonitor", '{"mac":"e8:91:20:a1:b0:34", "channel":0, "type":0}', function(value) {
+               console.log(value)
+        })
+    }
+
+    function closeFixMacMonitor() {
+        dsBridge.call("ascend.closeFixMacMonitor")
+    }
+
+    function openVirtualIDMonitor() {
+        dsBridge.call("ascend.openVirtualIDMonitor", '{"apName":"glab_app_5G", "channel":1, "apPswd":"glab@123"}', function(value) {
+               console.log(value)
+        })
+    }
+
+    function closeVirtualIDMonitor() {
+        dsBridge.call("ascend.closeVirtualIDMonitor", 1)
+    }
+
+    function startFastScan() {
+        dsBridge.call("ascend.startFastScan", 'e8:91:20:a1:b0:34', function(value) {
+               console.log(value)
+        })
+    }
+
+    function stopFastScan() {
+        dsBridge.call("ascend.stopFastScan", function(value) {
+               console.log(value)
+        })
+    }
+
+    function startCrackApPsw() {
+        dsBridge.call("ascend.startCrackApPsw", '{"apMac":"e8:91:20:a1:b0:34", "channel":1}', function(value) {
+               console.log(value)
+        })
+    }
+
+    function stopCrackApPsw() {
+        dsBridge.call("ascend.stopCrackApPsw", function(value) {
+               console.log(value)
+        })
+    }
+
+    function openApInduce() {
+        dsBridge.call("ascend.openApInduce", '{"isPswd":false, "apNames":["hello_wifi", "TP-Link_888", "HUAWEI-1103"]}', function(value) {
+               console.log(value)
+        })
+    }
+
+    function closeApInduce() {
+        dsBridge.call("ascend.closeApInduce", function(value) {
+               console.log(value)
+        })
+    }
+
+    function getSMSControls() {
+        dsBridge.call("ascend.getSMSControls", function(value) {
+               console.log(value)
+        })
+    }
+
+    function setSMSControl() {
+        dsBridge.call("ascend.setSMSControl", '{"mac":"e8:91:20:a1:b0:34", "remark":"张三的手机", "time":2, "":"138565656556"}', function(value) {
+               console.log(value)
+        })
+    }
+
+    function deleteSMSControl() {
+        dsBridge.call("ascend.deleteSMSControl", 'e8:91:20:a1:b0:34', function(value) {
+               console.log(value)
+        })
+    }
+
+    function getMoveWarn() {
+        dsBridge.call("ascend.getMoveWarn", function(value) {
+               console.log(value)
+        })
+    }
+
+    function setMoveWarn() {
+        dsBridge.call("ascend.setMoveWarn", '{"pn":"15394609809", "time":2}', function(value) {
+               console.log(value)
+        })
+    }
+
+    function deleteMoveWarn() {
+        dsBridge.call("ascend.deleteMoveWarn", function(value) {
+               console.log(value)
+        })
+    }
+
+    ////////////////// QR Code ////////////////
+    function scanQRCode() {
+        dsBridge.call("QR.scanQRCode", function(value) {
+            console.log(value)
+        });
+    }
+
+    function createQRCode() {
+        console.log(dsBridge.call("QR.createQRCode", "我爱北京天安门"))
+    }
+
+    function createBarCode() {
+        console.log(dsBridge.call("QR.createBarCode", '{"content":"L 20200108147", "width":600, "height":200}'))
+    }
+
+    ////////////////// debug //////////////////
+    function Test1() {
+        dsBridge.call("debug.call", obj);
+    }
+
+    function Test2() {
+        console.log(dsBridge.call("debug.back", obj));
+    }
+    
+    ////////////////// listener //////////////////
+    dsBridge.register('listener', function (value) {
+        console.log(value);
+    })
+    
+</script>
+</body>
+</html>
