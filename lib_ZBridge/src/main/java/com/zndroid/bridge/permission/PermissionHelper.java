@@ -1,8 +1,11 @@
 package com.zndroid.bridge.permission;
 
 import android.app.Activity;
-import android.app.Fragment;
+
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+
+import com.zndroid.bridge.InvokeController;
 
 import java.util.List;
 
@@ -23,7 +26,7 @@ public class PermissionHelper {
     }
 
     // 传递参数如下：
-    // Object Fragment or Activity
+    // Object or Fragment or Activity
     // int 请求码
     // 需要请求的权限 String[]
 
@@ -38,7 +41,44 @@ public class PermissionHelper {
         PermissionHelper.with(activity).requestCode(requestCode).requestPermission(permissions).request();
     }
 
+    /**
+     * 请求权限
+     *
+     * @param mObject
+     * @param requestCode
+     * @param permissions
+     */
+    public static void requestPermission(Object mObject, int requestCode, String[] permissions) {
+        PermissionHelper.with(mObject).requestCode(requestCode).requestPermission(permissions).request();
+    }
+
+    /**
+     * 请求权限
+     *
+     * @param fragment
+     * @param requestCode
+     * @param permissions
+     */
+    public static void requestPermission(Fragment fragment, int requestCode, String[] permissions) {
+        PermissionHelper.with(fragment).requestCode(requestCode).requestPermission(permissions).request();
+    }
+
     // 链式传参
+    /**
+     * 兼容
+     *
+     * @param object
+     * @return
+     */
+    public static PermissionHelper with(Object object) {
+        if (object instanceof InvokeController)
+            return new PermissionHelper(object);
+        if (object instanceof Activity)
+            return with((Activity)object);
+        if (object instanceof Fragment)
+            return with((Fragment)object);
+        return null;
+    }
 
     /**
      * 兼容Activity

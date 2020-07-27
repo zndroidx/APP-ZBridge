@@ -119,7 +119,7 @@ public class InvokeController {
 
         this.webView = webView;
 
-        PermissionHelper.requestPermission(activity, PERMISSION_REQUEST_CODE, permissions);
+        PermissionHelper.requestPermission(this, PERMISSION_REQUEST_CODE, permissions);
 
         MessageController.get().setDebug(isDebug);
         this.webView.disableJavascriptDialogBlock(isDebug);

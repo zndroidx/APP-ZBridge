@@ -27,8 +27,6 @@ public class MainActivity extends AppCompatActivity {
 
         //可选
         InvokeController.get().setDebug(true);
-        //must
-        InvokeController.get().onCreate(this, webView);
         //可选 根据宿主业务逻辑处理自定义API
         CustomAPI customAPI = new CustomAPI(this);
         InvokeController.get().addAPI(customAPI, "test");
@@ -65,6 +63,9 @@ public class MainActivity extends AppCompatActivity {
                 dialog.show(getSupportFragmentManager(), "permission");
             }
         });
+
+        //must
+        InvokeController.get().onCreate(this, webView);
     }
 
     @Override
