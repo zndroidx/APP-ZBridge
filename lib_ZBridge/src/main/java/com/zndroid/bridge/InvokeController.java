@@ -1,8 +1,10 @@
 package com.zndroid.bridge;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -23,10 +25,15 @@ import com.zndroid.bridge.framework.ZWebView;
 import com.zndroid.bridge.framework.ZWebViewClient;
 import com.zndroid.bridge.framework.core.DWebView;
 import com.zndroid.bridge.params.Message;
+import com.zndroid.bridge.permission.PermissionFail;
+import com.zndroid.bridge.permission.PermissionHelper;
+import com.zndroid.bridge.permission.PermissionSucceed;
+import com.zndroid.bridge.permission.PermissionUtils;
 import com.zndroid.bridge.util.SPUtil;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,13 +42,16 @@ import java.util.Map;
  * Java <---> Js 调度中心
  */
 public class InvokeController {
+    private boolean isDebug = BuildConfig.DEBUG;
+
     private static final String TAG = "InvokeController";
     private static final String _js_script_file = "dsbridge.js";
+    private final int PERMISSION_REQUEST_CODE = 137;
 
     public static final String KEY_BUNDLE = "key_bundle";
 
-    private boolean isDebug = BuildConfig.DEBUG;
     private PageLoadListener pageLoadListener;
+    private InvokePermissionListener invokePermissionListener;//默认实现权限请求
 
     private WeakReference<Context> context;
     private WeakReference<Activity> activity;
@@ -51,34 +61,26 @@ public class InvokeController {
     private CommonAPI commonAPI;
     private DebugAPI debugAPI;
 
+    private String[] permissions = new String[] {
+            Manifest.permission.CALL_PHONE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    };
+
     public interface PageLoadListener {
+        void onPageStart(String url);
         void onPageFinished(String url);
         void onPageError(String reason);
     }
 
+    public interface InvokePermissionListener {
+        void onPermissionGranted();
+        void onPermissionRefused(List<String> deniedPermissions);
+    }
 
-    /**
-     * 自定义API 请在 {@#link #setActivity(activity) 方法之前调用}
-     * 使用方式参考</br>：
-     * <code>
-     *     public class TestAPI extends BaseAPI {
-     *     public TestAPI(Activity activity) {
-     *         super(activity);
-     *     }
-     *
-     *     @Override
-     *     protected String getTAG() {
-     *         return "TestAPI";
-     *     }
-     *
-     *     @JavascriptInterface
-     *     public void testAPI(Object object) {
-     *         Log.i(getTAG(), "test api");
-     *     }
-     *
-     * }
-     * </code>
-     * */
     public void addAPI(BaseAPI api, String nameSpace) {
         if (null != webView) {
             webView.addJavascriptObject(api, nameSpace);
@@ -87,6 +89,10 @@ public class InvokeController {
 
     public void setPageLoadListener(PageLoadListener pageLoadListener) {
         this.pageLoadListener = pageLoadListener;
+    }
+
+    public void setInvokePermissionListener(InvokePermissionListener invokeInitListener) {
+        this.invokePermissionListener = invokeInitListener;
     }
 
     public void setDebug(boolean isDebug) {
@@ -113,7 +119,10 @@ public class InvokeController {
 
         this.webView = webView;
 
+        PermissionHelper.requestPermission(activity, PERMISSION_REQUEST_CODE, permissions);
+
         MessageController.get().setDebug(isDebug);
+        this.webView.disableJavascriptDialogBlock(isDebug);
 
         if (isHasScript()) {//检测初始化状态
             if (isDebug)
@@ -128,6 +137,13 @@ public class InvokeController {
 
     private void initWebView() {
         webView.setWebViewClient(new ZWebViewClient(){
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (pageLoadListener != null)
+                    pageLoadListener.onPageStart(url);
+            }
+
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
@@ -175,6 +191,22 @@ public class InvokeController {
         }
     }
 
+    @PermissionSucceed(requestCode = PERMISSION_REQUEST_CODE)
+    public void permissionOK() {
+        if (isDebug)
+            Log.i(TAG, "permission all is ok...");
+        if (null != invokePermissionListener)
+            invokePermissionListener.onPermissionGranted();
+    }
+
+    @PermissionFail(requestCode = PERMISSION_REQUEST_CODE)
+    public void permissionFailed() {
+        if (isDebug)
+            Log.i(TAG, "permission has deny...");
+        if (null != invokePermissionListener)
+            invokePermissionListener.onPermissionRefused(PermissionUtils.getDeniedPermissions(this, permissions));
+    }
+
     /** 加载 web view*/
     public void load(String url) {
         if (null != webView && !TextUtils.isEmpty(url)) {
@@ -188,13 +220,9 @@ public class InvokeController {
         }
     }
 
-    private void onError(String msg) {
-        throw new UnsupportedOperationException(msg);
-    }
-
     private boolean isHasScript() {
         try {
-            String[] fileNames = context.get().getResources().getAssets().list("");
+            String[] fileNames = context.get().getResources().getAssets().list("zndroid");
             if (fileNames != null) {
                 for (String s: fileNames) {
                     if (_js_script_file.equals(s))
@@ -209,6 +237,13 @@ public class InvokeController {
         return false;
     }
 
+    public Context getContext() {
+        return context.get();
+    }
+
+    public Activity getActivity() {
+        return activity.get();
+    }
 
     /** 注册USB状态监听广播*/
     private void USBMonitor() {
@@ -251,6 +286,7 @@ public class InvokeController {
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        PermissionHelper.requestPermissionsResult(this, requestCode, permissions);
         nativeAPI.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
@@ -261,23 +297,20 @@ public class InvokeController {
 
     public void onBackPressed() {
         if (null != webView) {
-
             Message<Boolean> message = new Message();
             message.setKey(MessageController.KEY_EVENT_ON_BACK);
             message.setValue(true);
             MessageController.get().with(webView).sendMessage(message);
-//            if (webView.canGoBack()) {
-//                webView.goBack();
-//            } else {
-//                activity.finish();
-//            }
 
             if (!webView.canGoBack() && null != activity)
                 activity.get().finish();
         }
     }
 
-    public void setSPFileName(String fileName) {
+    /**
+     * 提供可以设置SharedPreferences为宿主APPSharedPreferences文件的方法
+     * */
+    public void setSharedPreferencesFileName(String fileName) {
         SPUtil.setFileName(fileName);
     }
 

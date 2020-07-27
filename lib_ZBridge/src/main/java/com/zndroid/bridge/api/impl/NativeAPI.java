@@ -46,14 +46,10 @@ public class NativeAPI extends BaseAPI {
         return TAG;
     }
 
-    private String parseString(String string) {
-        return "\"" + string + "\"";
-    }
-
     @JavascriptInterface
     public String getMac(Object object) {
         try {
-            String mac = parseString(DeviceUtils.getMac(context));
+            String mac = DeviceUtils.getMac(context);
             showLog("getMac = " + mac);
             return mac;
         } catch (Exception e) {
@@ -70,7 +66,7 @@ public class NativeAPI extends BaseAPI {
             if (imeis.length == 0) {
                 return "";
             }
-            String imei = parseString(StringUtils.join(",", imeis));
+            String imei = StringUtils.join(",", imeis);
             showLog("getIMEI = " + imei);
             return imei;
         } catch (Exception e) {
@@ -87,7 +83,7 @@ public class NativeAPI extends BaseAPI {
             if (imsis.length == 0) {
                 return "";
             }
-            String imsi = parseString(StringUtils.join(",", imsis));
+            String imsi = StringUtils.join(",", imsis);
             showLog("getIMSI = " + imsi);
             return imsi;
         } catch (Exception e) {
@@ -125,7 +121,7 @@ public class NativeAPI extends BaseAPI {
     @JavascriptInterface
     public String getPackageName(Object object) {
         try {
-            String packageName = parseString(context.getPackageName());
+            String packageName = context.getPackageName();
             showLog("getPackageName = " + packageName);
             return packageName;
         } catch (Exception e) {
@@ -138,7 +134,7 @@ public class NativeAPI extends BaseAPI {
     @JavascriptInterface
     public String getVersionName(Object object) {
         try {
-            String versionName = null == getPackageInfo() ? parseString("") : parseString(getPackageInfo().versionName);
+            String versionName = null == getPackageInfo() ? "" : getPackageInfo().versionName;
             showLog("getVersionName = " + versionName);
             versionName = "1.0";
             return versionName;
@@ -229,7 +225,7 @@ public class NativeAPI extends BaseAPI {
     @JavascriptInterface
     public String getAppCacheSize(Object object) {
         showLog("getAppCacheSize");
-        return parseString(Cleaner.getAppCacheSizeFormat(context));
+        return Cleaner.getAppCacheSizeFormat(context);
     }
 
     @JavascriptInterface

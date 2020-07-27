@@ -7,6 +7,8 @@ import android.os.Build;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.zndroid.bridge.InvokeController;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -124,12 +126,14 @@ public class PermissionUtils {
      * @return
      */
     public static Activity getActivity(Object mObject) {
-        if (mObject instanceof Activity) {
+        if (mObject instanceof Activity)
             return (Activity) mObject;
-        }
-        if (mObject instanceof Fragment) {
+
+        if (mObject instanceof Fragment)
             return ((Fragment) mObject).getActivity();
-        }
+
+        if (mObject instanceof InvokeController)
+            return InvokeController.get().getActivity();
         return null;
     }
 

@@ -21,8 +21,8 @@ import android.widget.LinearLayout;
 import android.widget.Space;
 import android.widget.TextView;
 
-import com.arcvideo.bridger.R;
 import com.google.android.material.snackbar.Snackbar;
+import com.zndroid.bridge.R;
 
 import java.lang.ref.WeakReference;
 

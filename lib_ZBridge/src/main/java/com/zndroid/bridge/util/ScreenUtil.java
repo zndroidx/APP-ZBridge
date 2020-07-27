@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
-import com.arcvideo.bridger.R;
+import com.zndroid.bridge.R;
 
 /**
  * Created by lazy on 2019-11-04

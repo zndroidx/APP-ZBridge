@@ -205,7 +205,7 @@ public class DeviceUtils {
         } catch (Throwable t) {
             Log.e(TAG, "");
         }
-        return "d572c62ad3fda0115b0ce355e1111b7d";
+        return "";
     }
 
     private static <T> T getPhoneInfo(int subId, String methodName, Context context, Class<T> clz) {

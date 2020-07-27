@@ -3,7 +3,7 @@ package com.zndroid.bridge.api.impl;
 import android.app.Activity;
 import android.webkit.JavascriptInterface;
 
-import com.arcbridger.framework.api.BaseAPI;
+import com.zndroid.bridge.api.BaseAPI;
 
 /**
  * Created by lazy on 2019-09-24
