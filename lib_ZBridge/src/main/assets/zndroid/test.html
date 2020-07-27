@@ -59,6 +59,10 @@
 <div class="btn" onclick="activityFinish()">activityFinish</div>
 <div class="btn" onclick="isInstall()">isInstall</div>
 
+<h2>-------custom-------</h2>
+<div class="btn" onclick="customAPI()">customAPI</div>
+
+
 <h2>-------debug-------</h2>
 <div class="btn" onclick="Test1()">Test1</div>
 <div class="btn" onclick="Test2()">Test2</div>
@@ -185,6 +189,11 @@
 
     function navigationTo() {
         dsBridge.call("navigation.navigationTo", '{"type":2, "latitude":39.5209922936, "longitude":112.0825195313, "aimAddress":"山西省朔州市平鲁区304省道"}')
+    }
+
+    ////////////////// custom //////////////////
+    function customAPI() {
+        dsBridge.call("test.custom")
     }
     ////////////////// debug //////////////////
     function Test1() {

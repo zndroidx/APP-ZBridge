@@ -29,6 +29,10 @@ public class MainActivity extends AppCompatActivity {
         InvokeController.get().setDebug(true);
         //must
         InvokeController.get().onCreate(this, webView);
+        //可选 根据宿主业务逻辑处理自定义API
+        CustomAPI customAPI = new CustomAPI(this);
+        InvokeController.get().addAPI(customAPI, "test");
+
         //可选
         InvokeController.get().setPageLoadListener(new InvokeController.PageLoadListener() {
             @Override
