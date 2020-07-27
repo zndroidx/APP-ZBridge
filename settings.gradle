@@ -1,2 +1,3 @@
+include ':lib_ZBridge'
 include ':app'
 rootProject.name = "APP-ZBridge"
