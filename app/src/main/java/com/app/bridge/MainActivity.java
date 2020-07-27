@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //可选
+        //可选（先设置回调，再请求权限，否则因为多线程的原因导致回调时机错乱从而loadURL无效）
         InvokeController.get().setInvokePermissionListener(new InvokeController.InvokePermissionListener() {
             @Override
             public void onPermissionGranted() {
