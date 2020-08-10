@@ -10,8 +10,13 @@ import androidx.annotation.Nullable;
  */
 public interface LifecycleCallBack {
     void onCreate(Bundle savedInstanceState);
+    void onStart();
+    void onResume();
+    void onStop();
+    void onPause();
     void onSaveInstanceState(Bundle outState);
     void onDestroy();
+
     void onActivityResult(int requestCode, int resultCode, @Nullable Intent data);
     void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults);
 }

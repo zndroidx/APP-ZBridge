@@ -11,9 +11,6 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.zndroid.bridge.api.BaseAPI;
 import com.zndroid.bridge.framework.core.CompletionHandler;
@@ -63,7 +60,7 @@ public class CommonAPI extends BaseAPI {
         }
 
         String packageName = object.toString();
-        PackageManager manager = context.getPackageManager();
+        PackageManager manager = context.get().getPackageManager();
         List<PackageInfo> list = manager.getInstalledPackages(0);
         if (null != list) {
             for (PackageInfo info : list) {
@@ -99,7 +96,7 @@ public class CommonAPI extends BaseAPI {
             intent.setAction(Intent.ACTION_VIEW);
             Uri uri = Uri.parse(url);
             intent.setData(uri);
-            activity.startActivity(intent);
+            activity.get().startActivity(intent);
 
         } catch (Exception e) {
             showToast(e.getMessage());
@@ -153,16 +150,16 @@ public class CommonAPI extends BaseAPI {
             snackbar = SnackbarUtils.Short(webView, msg);
             if (type == 0) {
                 snackbar = snackbar.info();
-                snackbar.actionColor(context.getResources().getColor(android.R.color.white));//可能会动态化
+                snackbar.actionColor(context.get().getResources().getColor(android.R.color.white));//可能会动态化
             } else if (type == 1) {
                 snackbar = snackbar.confirm();
-                snackbar.actionColor(context.getResources().getColor(android.R.color.white));
+                snackbar.actionColor(context.get().getResources().getColor(android.R.color.white));
             } else if (type == 2) {
                 snackbar = snackbar.warning();
-                snackbar.actionColor(context.getResources().getColor(android.R.color.white));
+                snackbar.actionColor(context.get().getResources().getColor(android.R.color.white));
             } else if (type == 3) {
                 snackbar = snackbar.danger();
-                snackbar.actionColor(context.getResources().getColor(android.R.color.white));
+                snackbar.actionColor(context.get().getResources().getColor(android.R.color.white));
             }
         } catch (Exception e) {
             msg = object.toString();
@@ -184,7 +181,7 @@ public class CommonAPI extends BaseAPI {
     @JavascriptInterface
     public void activityFinish(Object object) {
         if (null != activity)
-            activity.finish();
+            activity.get().finish();
     }
 
     @JavascriptInterface
@@ -214,7 +211,7 @@ public class CommonAPI extends BaseAPI {
             value = jsonObject.getString("value");
 
         try {
-            Intent intent = new Intent(activity, Class.forName(className));
+            Intent intent = new Intent(activity.get(), Class.forName(className));
             if (!TextUtils.isEmpty(value)) {
                 Bundle bundle = new Bundle();
                 bundle.putString(KEY_BUNDLE, value);
@@ -232,9 +229,9 @@ public class CommonAPI extends BaseAPI {
 
     private void jumpToActivity(Intent intent, boolean hasBack) {
         if (hasBack)
-            activity.startActivityForResult(intent, REQUEST_CODE);
+            activity.get().startActivityForResult(intent, REQUEST_CODE);
         else
-            activity.startActivity(intent);
+            activity.get().startActivity(intent);
     }
 
     @JavascriptInterface

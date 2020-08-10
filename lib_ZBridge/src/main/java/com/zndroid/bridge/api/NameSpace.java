@@ -1,4 +1,4 @@
-package com.zndroid.bridge;
+package com.zndroid.bridge.api;
 
 /**
  * Created by lazy on 2019-09-21

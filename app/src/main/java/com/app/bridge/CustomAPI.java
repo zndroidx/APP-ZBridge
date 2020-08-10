@@ -27,4 +27,10 @@ public class CustomAPI extends BaseAPI {
     public void custom(Object object) {
         showToast("im custom API call");
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        showLog("im on destroyed.....");
+    }
 }

@@ -18,11 +18,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.zndroid.bridge.api.BaseAPI;
+import com.zndroid.bridge.api.NameSpace;
 import com.zndroid.bridge.api.impl.CommonAPI;
 import com.zndroid.bridge.api.impl.DebugAPI;
 import com.zndroid.bridge.api.impl.NativeAPI;
 import com.zndroid.bridge.framework.ZWebView;
 import com.zndroid.bridge.framework.ZWebViewClient;
+import com.zndroid.bridge.framework.core.CompletionHandler;
 import com.zndroid.bridge.framework.core.DWebView;
 import com.zndroid.bridge.params.Message;
 import com.zndroid.bridge.permission.PermissionFail;
@@ -33,6 +35,7 @@ import com.zndroid.bridge.util.SPUtil;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +51,8 @@ public class InvokeController {
     private static final String _js_script_file = "dsbridge.js";
     private final int PERMISSION_REQUEST_CODE = 137;
 
+    /** 获取页面传值，当调用这两个方法时 {@link CommonAPI#openActivity(Object)} or {@link CommonAPI#openActivityForResult(Object, CompletionHandler)}
+     * @deprecated 建议采用 {@link #addAPI(BaseAPI, String)} 自定义API的方式实现*/
     public static final String KEY_BUNDLE = "key_bundle";
 
     private PageLoadListener pageLoadListener;
@@ -70,6 +75,8 @@ public class InvokeController {
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
 
+    private LinkedHashMap<BaseAPI, String> apiMaps = new LinkedHashMap<>();
+    
     public interface PageLoadListener {
         void onPageStart(String url);
         void onPageFinished(String url);
@@ -81,39 +88,34 @@ public class InvokeController {
         void onPermissionRefused(List<String> deniedPermissions);
     }
 
-    public void addAPI(BaseAPI api, String nameSpace) {
-        if (null != webView) {
-            webView.addJavascriptObject(api, nameSpace);
-        }
-    }
-
+    //////////////////////////////// API //////////////////////////////
+    /** 设置页面加载监听*/
     public void setPageLoadListener(PageLoadListener pageLoadListener) {
         this.pageLoadListener = pageLoadListener;
     }
 
+    /** 设置权限监听*/
     public void setInvokePermissionListener(InvokePermissionListener invokeInitListener) {
         this.invokePermissionListener = invokeInitListener;
     }
 
+    /** 设置调试模式 发布版默认 false*/
     public void setDebug(boolean isDebug) {
         this.isDebug = isDebug;
     }
 
-    private void initAPI(Activity activity) {
-        nativeAPI = new NativeAPI(activity);
-        commonAPI = new CommonAPI(activity);
-        commonAPI.setWebView(webView);
-        debugAPI = new DebugAPI(activity);
-
-        injectAPI();//注入API
+    /** 开发环境？*/
+    public boolean isDebug() {
+        return isDebug;
     }
 
-    public void onSaveInstanceState(Bundle outState) {
-        nativeAPI.onSaveInstanceState(outState);
+    /** 添加自定义 API，用于宿主APP业务逻辑，请在 {@link #onCreate(Activity, Bundle, ZWebView)} 方法之前调用*/
+    public void addAPI(BaseAPI api, String nameSpace) {
+        apiMaps.put(api, nameSpace);
     }
 
-    /** 初始化并注入交互API*/
-    public void onCreate(Activity activity, @NonNull ZWebView webView) {
+    /** 初始化并注入API*/
+    public void onCreate(Activity activity, Bundle savedInstanceState, @NonNull ZWebView webView) {
         this.context = new WeakReference<>(activity.getApplicationContext());
         this.activity = new WeakReference<>(activity);
 
@@ -130,11 +132,58 @@ public class InvokeController {
 
             initWebView();
             initAPI(this.activity.get());
+            onCreate(savedInstanceState);
         } else {
             Log.e(TAG, "The file 'dsbridge.js' not exist");
         }
     }
 
+    /** 加载 web view*/
+    public void load(String url) {
+        if (null != webView && !TextUtils.isEmpty(url)) {
+            webView.loadUrl(url);
+        }
+    }
+
+    public void load(String url, Map<String, String> additionalHttpHeaders) {
+        if (null != webView && !TextUtils.isEmpty(url)) {
+            webView.loadUrl(url, additionalHttpHeaders);
+        }
+    }
+
+    public Context getContext() {
+        return context.get();
+    }
+
+    public Activity getActivity() {
+        return activity.get();
+    }
+
+    /**
+     * 提供可以设置SharedPreferences为宿主APPSharedPreferences文件的方法
+     *
+     * @deprecated {建议使用自定义API处理上层业务逻辑 @link #addAPI(BaseAPI, String)}
+     * */
+    public void setSharedPreferencesFileName(String fileName) {
+        SPUtil.setFileName(fileName);
+    }
+    //////////////////////////////// API //////////////////////////////
+
+    /** 初始化API*/
+    private void initAPI(Activity activity) {
+        nativeAPI = new NativeAPI(activity);
+        commonAPI = new CommonAPI(activity);
+        commonAPI.setWebView(webView);
+        debugAPI = new DebugAPI(activity);
+
+        apiMaps.put(nativeAPI, NameSpace.NATIVE.getValue());
+        apiMaps.put(commonAPI, NameSpace.COMMON.getValue());
+        apiMaps.put(debugAPI, NameSpace.DEBUG.getValue());
+
+        injectAPI();//注入API
+    }
+
+    /** 初始化 web_view*/
     private void initWebView() {
         webView.setWebViewClient(new ZWebViewClient(){
             @Override
@@ -185,10 +234,55 @@ public class InvokeController {
     /** 注入JS调用native方法*/
     private void injectAPI() {
         if (null != webView) {
-            webView.addJavascriptObject(nativeAPI, NameSpace.NATIVE.getValue());
-            webView.addJavascriptObject(commonAPI, NameSpace.COMMON.getValue());
-            webView.addJavascriptObject(debugAPI, NameSpace.DEBUG.getValue());
+            for (Map.Entry<BaseAPI, String> api : apiMaps.entrySet()) {
+                webView.addJavascriptObject(api.getKey(), api.getValue());
+            }
         }
+    }
+
+    /** 注册安装包安装是否成功广播*/
+    private void APKInstallMonitor() {
+        //nothing
+
+//        IntentFilter filter = new IntentFilter();
+//        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+//        try {
+//            context.registerReceiver(mAppInstallReceiver, filter);
+//        } catch (Exception e) {
+//            LogPrinter.t(TAG).e(e, e.getMessage());
+//        }
+    }
+
+    /** 注册USB状态监听广播*/
+    private void USBMonitor() {
+        //nothing
+
+//        IntentFilter filter = new IntentFilter();
+//        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+//        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+//        try {
+//            context.registerReceiver(mUsbStateReceiver, filter);
+//        } catch (Exception e) {
+//            LogPrinter.t(TAG).e(e, "");
+//        }
+    }
+
+    /** 检查脚本文件是否存在*/
+    private boolean isHasScript() {
+        try {
+            String[] fileNames = context.get().getResources().getAssets().list("zndroid");
+            if (fileNames != null) {
+                for (String s: fileNames) {
+                    if (_js_script_file.equals(s))
+                        return true;
+                }
+            } else {
+                return false;
+            }
+        } catch (IOException e) {
+            return false;
+        }
+        return false;
     }
 
     @PermissionSucceed(requestCode = PERMISSION_REQUEST_CODE)
@@ -207,74 +301,76 @@ public class InvokeController {
             invokePermissionListener.onPermissionRefused(PermissionUtils.getDeniedPermissions(this, permissions));
     }
 
-    /** 加载 web view*/
-    public void load(String url) {
-        if (null != webView && !TextUtils.isEmpty(url)) {
-            webView.loadUrl(url);
-        }
+    //////////////////////// get instance ////////////////////////
+    private InvokeController() {}
+
+    private static class $ {
+        private static InvokeController $$ = new InvokeController();
     }
 
-    public void load(String url, Map<String, String> additionalHttpHeaders) {
-        if (null != webView && !TextUtils.isEmpty(url)) {
-            webView.loadUrl(url, additionalHttpHeaders);
-        }
+    public static InvokeController get() {
+        return $.$$;
     }
+    //////////////////////// get instance ////////////////////////
 
-    private boolean isHasScript() {
-        try {
-            String[] fileNames = context.get().getResources().getAssets().list("zndroid");
-            if (fileNames != null) {
-                for (String s: fileNames) {
-                    if (_js_script_file.equals(s))
-                        return true;
-                }
-            } else {
-                return false;
+
+    //////////////////////// 生命周期处理 ////////////////////////
+    private void onCreate(Bundle savedInstanceState) {
+        if (apiMaps != null) {
+            for (BaseAPI baseAPI : apiMaps.keySet()) {
+                baseAPI.onCreate(savedInstanceState);
             }
-        } catch (IOException e) {
-            return false;
         }
-        return false;
     }
 
-    public Context getContext() {
-        return context.get();
+    public void onStart() {
+        if (apiMaps != null) {
+            for (BaseAPI baseAPI : apiMaps.keySet()) {
+                baseAPI.onStart();
+            }
+        }
     }
 
-    public Activity getActivity() {
-        return activity.get();
+    public void onResume() {
+        if (apiMaps != null) {
+            for (BaseAPI baseAPI : apiMaps.keySet()) {
+                baseAPI.onResume();
+            }
+        }
     }
 
-    /** 注册USB状态监听广播*/
-    private void USBMonitor() {
-        //nothing
-
-//        IntentFilter filter = new IntentFilter();
-//        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-//        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-//        try {
-//            context.registerReceiver(mUsbStateReceiver, filter);
-//        } catch (Exception e) {
-//            LogPrinter.t(TAG).e(e, "");
-//        }
+    public void onStop() {
+        if (apiMaps != null) {
+            for (BaseAPI baseAPI : apiMaps.keySet()) {
+                baseAPI.onStop();
+            }
+        }
     }
 
-    /** 注册安装包安装是否成功广播*/
-    private void APKInstallMonitor() {
-        //nothing
-
-//        IntentFilter filter = new IntentFilter();
-//        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-//        try {
-//            context.registerReceiver(mAppInstallReceiver, filter);
-//        } catch (Exception e) {
-//            LogPrinter.t(TAG).e(e, e.getMessage());
-//        }
+    public void onPause() {
+        if (apiMaps != null) {
+            for (BaseAPI baseAPI : apiMaps.keySet()) {
+                baseAPI.onPause();
+            }
+        }
     }
 
-    //////////////////////////////// API //////////////////////////////
+    public void onSaveInstanceState(Bundle outState) {
+        if (apiMaps != null) {
+            for (BaseAPI baseAPI : apiMaps.keySet()) {
+                baseAPI.onSaveInstanceState(outState);
+            }
+        }
+    }
+
     /** 相关销毁处理*/
     public void onDestroy() {
+        if (apiMaps != null) {
+            for(BaseAPI api : apiMaps.keySet()) {
+                api.onDestroy();
+            }
+        }
+
         if (webView != null && webView.isActivated()) {
             webView.setWebViewClient(null);
             webView.setWebChromeClient(null);
@@ -287,12 +383,20 @@ public class InvokeController {
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         PermissionHelper.requestPermissionsResult(this, requestCode, permissions);
-        nativeAPI.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (apiMaps != null) {
+            for(BaseAPI api : apiMaps.keySet()) {
+                api.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
+        }
     }
 
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        nativeAPI.onActivityResult(requestCode, resultCode, data);
-        commonAPI.onActivityResult(requestCode, resultCode, data);
+        if (apiMaps != null) {
+            for(BaseAPI api : apiMaps.keySet()) {
+                api.onActivityResult(requestCode, resultCode, data);
+            }
+        }
     }
 
     public void onBackPressed() {
@@ -306,23 +410,4 @@ public class InvokeController {
                 activity.get().finish();
         }
     }
-
-    /**
-     * 提供可以设置SharedPreferences为宿主APPSharedPreferences文件的方法
-     * */
-    public void setSharedPreferencesFileName(String fileName) {
-        SPUtil.setFileName(fileName);
-    }
-
-    //////////////////////// get instance ////////////////////////
-    private InvokeController() {}
-
-    private static class $ {
-        private static InvokeController $$ = new InvokeController();
-    }
-
-    public static InvokeController get() {
-        return $.$$;
-    }
-    //////////////////////// get instance ////////////////////////
 }

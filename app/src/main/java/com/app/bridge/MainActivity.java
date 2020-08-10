@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //must
-        InvokeController.get().onCreate(this, webView);
+        InvokeController.get().onCreate(this, savedInstanceState, webView);
     }
 
     @Override
@@ -100,5 +100,17 @@ public class MainActivity extends AppCompatActivity {
         //must
         InvokeController.get().onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        InvokeController.get().onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        InvokeController.get().onPause();
     }
 }

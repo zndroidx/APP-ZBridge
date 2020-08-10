@@ -49,7 +49,7 @@ public class NativeAPI extends BaseAPI {
     @JavascriptInterface
     public String getMac(Object object) {
         try {
-            String mac = DeviceUtils.getMac(context);
+            String mac = DeviceUtils.getMac(context.get());
             showLog("getMac = " + mac);
             return mac;
         } catch (Exception e) {
@@ -62,7 +62,7 @@ public class NativeAPI extends BaseAPI {
     @JavascriptInterface
     public String getIMEI(Object object) {
         try {
-            String[] imeis = DeviceUtils.getDeviceIds(context);
+            String[] imeis = DeviceUtils.getDeviceIds(context.get());
             if (imeis.length == 0) {
                 return "";
             }
@@ -79,7 +79,7 @@ public class NativeAPI extends BaseAPI {
     @JavascriptInterface
     public String getIMSI(Object object) {
         try {
-            String[] imsis = DeviceUtils.getSubscriberIds(context);
+            String[] imsis = DeviceUtils.getSubscriberIds(context.get());
             if (imsis.length == 0) {
                 return "";
             }
@@ -94,10 +94,10 @@ public class NativeAPI extends BaseAPI {
     }
 
     private PackageInfo getPackageInfo() {
-        PackageManager pm = context.getPackageManager();
+        PackageManager pm = context.get().getPackageManager();
 
         try {
-            return pm.getPackageInfo(context.getPackageName(), 0);
+            return pm.getPackageInfo(context.get().getPackageName(), 0);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -121,7 +121,7 @@ public class NativeAPI extends BaseAPI {
     @JavascriptInterface
     public String getPackageName(Object object) {
         try {
-            String packageName = context.getPackageName();
+            String packageName = context.get().getPackageName();
             showLog("getPackageName = " + packageName);
             return packageName;
         } catch (Exception e) {
@@ -147,7 +147,7 @@ public class NativeAPI extends BaseAPI {
 
     @JavascriptInterface
     public boolean isGPSOpen(Object object) {
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        LocationManager locationManager = (LocationManager) context.get().getSystemService(Context.LOCATION_SERVICE);
 
         boolean isGPSOpen = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
         showLog("isGPSOpened = " + isGPSOpen);
@@ -162,7 +162,7 @@ public class NativeAPI extends BaseAPI {
         settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         if (null != activity)
-            activity.startActivity(settingsIntent);
+            activity.get().startActivity(settingsIntent);
     }
 
     @SuppressLint("MissingPermission")
@@ -175,7 +175,7 @@ public class NativeAPI extends BaseAPI {
             return;
         }
 
-        if (PermissionUtils.hasPermission(context, Manifest.permission.CALL_PHONE)) {
+        if (PermissionUtils.hasPermission(context.get(), Manifest.permission.CALL_PHONE)) {
             String phoneNum = object.toString();
             showLog("callPhone = " + phoneNum);
 
@@ -184,7 +184,7 @@ public class NativeAPI extends BaseAPI {
             intent.setData(data);
 
             if (null != activity)
-                activity.startActivity(intent);
+                activity.get().startActivity(intent);
         } else {
             showToast("please access permission of 'call_phone'");
         }
@@ -203,7 +203,7 @@ public class NativeAPI extends BaseAPI {
 
         showLog("sendSMS = " + object.toString());
 
-        if (PermissionUtils.hasPermission(context, Manifest.permission.SEND_SMS)) {
+        if (PermissionUtils.hasPermission(context.get(), Manifest.permission.SEND_SMS)) {
             if (jsonObject.containsKey("pn") && jsonObject.containsKey("message")) {
                 String phoneNumber = jsonObject.getString("pn");
                 String message = jsonObject.getString("message");
@@ -225,24 +225,24 @@ public class NativeAPI extends BaseAPI {
     @JavascriptInterface
     public String getAppCacheSize(Object object) {
         showLog("getAppCacheSize");
-        return Cleaner.getAppCacheSizeFormat(context);
+        return Cleaner.getAppCacheSizeFormat(context.get());
     }
 
     @JavascriptInterface
     public void clearAppCache(Object object) {
         showLog("clearAppCache");
-        Cleaner.cleanAppData(context);
+        Cleaner.cleanAppData(context.get());
     }
 
     @JavascriptInterface
     public void restartApp(Object object) {
         showLog("restartApp");
-        Intent intent = context.getApplicationContext().getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        Intent intent = context.get().getPackageManager().getLaunchIntentForPackage(context.get().getPackageName());
         if (null != intent) {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            PendingIntent restartIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
+            PendingIntent restartIntent = PendingIntent.getActivity(context.get(), 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+            AlarmManager alarmManager = (AlarmManager) context.get().getSystemService(Context.ALARM_SERVICE);
             alarmManager.set(AlarmManager.RTC, 500, restartIntent);
 
             System.exit(0);
@@ -264,7 +264,7 @@ public class NativeAPI extends BaseAPI {
             String key = jsonObject.getString("key");
             Object value = jsonObject.get("value");
 
-            SPUtil.save(context, key, value);
+            SPUtil.save(context.get(), key, value);
         } else {
             showToast("params key or value not exists");
         }
@@ -292,7 +292,7 @@ public class NativeAPI extends BaseAPI {
                 return null;
             }
 
-            return SPUtil.get(context, key, def_value);
+            return SPUtil.get(context.get(), key, def_value);
         }
 
         return null;

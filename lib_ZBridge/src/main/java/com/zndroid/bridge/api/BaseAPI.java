@@ -10,18 +10,21 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.zndroid.bridge.BuildConfig;
+import com.zndroid.bridge.InvokeController;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Created by lazy on 2019-09-21
  */
 public abstract class BaseAPI implements LifecycleCallBack {
-    private boolean isDebug = BuildConfig.DEBUG;
-    protected Context context;
-    protected Activity activity;
+    private boolean isDebug = InvokeController.get().isDebug();
+    protected WeakReference<Context> context;
+    protected WeakReference<Activity> activity;
 
     public BaseAPI(Activity activity) {
-        this.activity = activity;
-        this.context = activity.getApplicationContext();
+        this.activity = new WeakReference<>(activity);
+        this.context = new WeakReference<>(activity.getApplicationContext());
     }
 
     protected void showLog(String msg) {
@@ -31,10 +34,10 @@ public abstract class BaseAPI implements LifecycleCallBack {
 
     protected void showToast(final String msg) {
         //不考虑debug，将异常抛出上层
-        activity.runOnUiThread(new Runnable() {
+        activity.get().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
+                Toast.makeText(activity.get(), msg, Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -61,6 +64,26 @@ public abstract class BaseAPI implements LifecycleCallBack {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+    }
+
+    @Override
+    public void onStart() {
+
+    }
+
+    @Override
+    public void onResume() {
+
+    }
+
+    @Override
+    public void onStop() {
+
+    }
+
+    @Override
+    public void onPause() {
 
     }
 
