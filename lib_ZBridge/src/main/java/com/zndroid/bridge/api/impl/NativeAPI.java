@@ -249,6 +249,34 @@ public class NativeAPI extends BaseAPI {
         }
     }
 
+    private void save(Object object, boolean rightNow) {
+        JSONObject jsonObject = JsonTranslator.instance().jsonStringToJsonObject(object.toString());
+
+        if (jsonObject.containsKey("key") && jsonObject.containsKey("value")) {
+            String key = jsonObject.getString("key");
+            Object value = jsonObject.get("value");
+
+            if (rightNow)
+                SPUtil.saveNow(context.get(), key, value);
+            else
+                SPUtil.save(context.get(), key, value);
+        } else {
+            showToast("params key or value not exists");
+        }
+    }
+
+    @JavascriptInterface
+    public void saveLocalDataNow(Object object) {
+        if (null == object) {
+            showToast("object is null");
+            return;
+        }
+
+        showLog("saveLocalDataNow = " + object.toString());
+
+        save(object, true);
+    }
+
     @JavascriptInterface
     public void saveLocalData(Object object) {
         if (null == object) {
@@ -258,16 +286,7 @@ public class NativeAPI extends BaseAPI {
 
         showLog("saveLocalData = " + object.toString());
 
-        JSONObject jsonObject = JsonTranslator.instance().jsonStringToJsonObject(object.toString());
-
-        if (jsonObject.containsKey("key") && jsonObject.containsKey("value")) {
-            String key = jsonObject.getString("key");
-            Object value = jsonObject.get("value");
-
-            SPUtil.save(context.get(), key, value);
-        } else {
-            showToast("params key or value not exists");
-        }
+        save(object, false);
     }
 
     @JavascriptInterface

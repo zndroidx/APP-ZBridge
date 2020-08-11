@@ -13,7 +13,7 @@ public class SPUtil {
         FILE_NAME = fileName;
     }
 
-    public static void save(Context context, String key, Object value) {
+    private static void save(Context context, String key, Object value, boolean rightNow) {
         if (value != null) {
             String type = value.getClass().getSimpleName();
             SharedPreferences sp = context.getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
@@ -36,8 +36,21 @@ public class SPUtil {
                     editor.putLong(key, (Long) value);
                     break;
             }
-            editor.apply();
+
+            if (rightNow) {
+                editor.commit();
+            } else {
+                editor.apply();
+            }
         }
+    }
+
+    public static void save(Context context, String key, Object value) {
+        save(context, key, value, false);
+    }
+
+    public static void saveNow(Context context, String key, Object value) {
+        save(context, key, value, true);
     }
 
     public static Object get(Context context, String key, Object defaultObject) {
