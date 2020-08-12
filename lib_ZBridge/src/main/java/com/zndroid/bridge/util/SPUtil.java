@@ -7,7 +7,7 @@ import android.content.SharedPreferences;
  * Created by lazy on 2019-09-23
  */
 public class SPUtil {
-    private static String FILE_NAME = "com.zndroid.sp";
+    private static String FILE_NAME = "com_zndroid_sp";
 
     public static void setFileName(String fileName) {
         FILE_NAME = fileName;
