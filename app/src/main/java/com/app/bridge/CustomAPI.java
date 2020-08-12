@@ -31,6 +31,6 @@ public class CustomAPI extends BaseAPI {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        showLog("im on destroyed.....");
+        showLog("im on destroyed....." + this.toString());
     }
 }

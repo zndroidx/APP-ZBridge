@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.zndroid.bridge.InvokeController;
 import com.zndroid.bridge.framework.ZWebView;
@@ -15,6 +16,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private final static String URL = "file:///android_asset/zndroid/test.html";
+//    private final static String URL = "http://www.baidu.com";
 
     private ZWebView webView;
 
@@ -35,17 +37,17 @@ public class MainActivity extends AppCompatActivity {
         InvokeController.get().setPageLoadListener(new InvokeController.PageLoadListener() {
             @Override
             public void onPageStart(String url) {
-
+                Log.i("bridge", "start=" + url);
             }
 
             @Override
             public void onPageFinished(String url) {
-
+                Log.i("bridge", "finish=" + url);
             }
 
             @Override
             public void onPageError(String reason) {
-
+                Log.i("bridge", "error=" + reason);
             }
         });
 

@@ -38,6 +38,7 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by lazy on 2019-08-19
@@ -46,10 +47,14 @@ import java.util.Map;
  */
 public class InvokeController {
     private boolean isDebug = BuildConfig.DEBUG;
+    private AtomicBoolean isLoadError;
 
     private static final String TAG = "InvokeController";
     private static final String _js_script_file = "dsbridge.js";
     private final int PERMISSION_REQUEST_CODE = 137;
+
+    private String originUrl = "";
+    private String errorUrl = "";
 
     /** 获取页面传值，当调用这两个方法时 {@link CommonAPI#openActivity(Object)} or {@link CommonAPI#openActivityForResult(Object, CompletionHandler)}
      * @deprecated 建议采用 {@link #addAPI(BaseAPI, String)} 自定义API的方式实现*/
@@ -120,6 +125,7 @@ public class InvokeController {
         this.activity = new WeakReference<>(activity);
 
         this.webView = webView;
+        this.isLoadError = new AtomicBoolean(false);
 
         PermissionHelper.requestPermission(this, PERMISSION_REQUEST_CODE, permissions);
 
@@ -160,6 +166,13 @@ public class InvokeController {
     }
 
     /**
+     * 设置加载失败显示的网页地址 暂不开放，逻辑处理较繁琐，
+     * 比如：用户的加载失败页面如果不是静态页面可能会加载失败，比较容易陷入死循环*/
+    private void setErrorUrl(String errorUrl) {
+        this.errorUrl = errorUrl;
+    }
+
+    /**
      * 提供可以设置SharedPreferences为宿主APPSharedPreferences文件的方法
      *
      * @deprecated {建议使用自定义API处理上层业务逻辑 @link #addAPI(BaseAPI, String)}
@@ -183,50 +196,67 @@ public class InvokeController {
         injectAPI();//注入API
     }
 
+    private void showErrorPage(WebView view, String msg) {
+        String errorLocalHtml = "file:///android_asset/zndroid/bridge_error/index.html";
+        if (!isLoadError.getAndSet(true)) {
+            view.loadUrl(TextUtils.isEmpty(errorUrl) ? errorLocalHtml : errorUrl);
+            if (pageLoadListener != null) {
+                pageLoadListener.onPageError(msg);
+            }
+        }
+    }
+
+    private boolean isAPI21() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    private boolean isAPI23() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+    }
+
     /** 初始化 web_view*/
     private void initWebView() {
         webView.setWebViewClient(new ZWebViewClient(){
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                originUrl = url;//save origin url for reload...
+
                 super.onPageStarted(view, url, favicon);
-                if (pageLoadListener != null)
+                if (pageLoadListener != null && !isLoadError.get())//如果加载失败，不会透传该回调
                     pageLoadListener.onPageStart(url);
             }
 
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if (pageLoadListener != null)
+                if (pageLoadListener != null && !isLoadError.get())//如果加载失败，不会透传该回调
                     pageLoadListener.onPageFinished(url);
             }
 
             @Override
             public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
                 super.onReceivedHttpError(view, request, errorResponse);
-                if (pageLoadListener != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                        pageLoadListener.onPageError(errorResponse.getReasonPhrase());
-                    else
-                        pageLoadListener.onPageError("onReceivedHttpError");
-                }
-
+                showErrorPage(view, isAPI21() ? errorResponse.getReasonPhrase() : "onReceivedHttpError");
+                if (isDebug)
+                    Log.i(TAG, isAPI21() ? errorResponse.getReasonPhrase() : "onReceivedHttpError");
             }
 
             @Override
             public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 super.onReceivedError(view, errorCode, description, failingUrl);
-                if (pageLoadListener != null)
-                    pageLoadListener.onPageError(description);
+                showErrorPage(view, description);
+                if (isDebug)
+                    Log.i(TAG, description);
+
             }
 
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
-                if (pageLoadListener != null)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
-                        pageLoadListener.onPageError(error.getDescription().toString());
-                    else
-                        pageLoadListener.onPageError("onReceivedError");
+                showErrorPage(view, isAPI23() ? error.getDescription().toString() : "onReceivedError");
+
+                if (isDebug)
+                    Log.i(TAG, isAPI23() ? error.getDescription().toString() : "onReceivedError");
             }
         });
     }
@@ -238,33 +268,6 @@ public class InvokeController {
                 webView.addJavascriptObject(api.getKey(), api.getValue());
             }
         }
-    }
-
-    /** 注册安装包安装是否成功广播*/
-    private void APKInstallMonitor() {
-        //nothing
-
-//        IntentFilter filter = new IntentFilter();
-//        filter.addAction(Intent.ACTION_PACKAGE_ADDED);
-//        try {
-//            context.registerReceiver(mAppInstallReceiver, filter);
-//        } catch (Exception e) {
-//            LogPrinter.t(TAG).e(e, e.getMessage());
-//        }
-    }
-
-    /** 注册USB状态监听广播*/
-    private void USBMonitor() {
-        //nothing
-
-//        IntentFilter filter = new IntentFilter();
-//        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-//        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-//        try {
-//            context.registerReceiver(mUsbStateReceiver, filter);
-//        } catch (Exception e) {
-//            LogPrinter.t(TAG).e(e, "");
-//        }
     }
 
     /** 检查脚本文件是否存在*/
@@ -365,10 +368,15 @@ public class InvokeController {
 
     /** 相关销毁处理*/
     public void onDestroy() {
+        //reset all
+        isLoadError.set(false);
+
         if (apiMaps != null) {
             for(BaseAPI api : apiMaps.keySet()) {
                 api.onDestroy();
             }
+
+            apiMaps.clear();
         }
 
         if (webView != null && webView.isActivated()) {
@@ -379,6 +387,8 @@ public class InvokeController {
             webView.destroy();
             webView = null;
         }
+
+        System.gc();
     }
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
