@@ -13,6 +13,7 @@ import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -133,13 +134,16 @@ public class InvokeController {
         MessageController.get().setDebug(isDebug);
 
         if (isHasScript()) {//检测初始化状态
+            /** init web view*/
             initWebView();
+            /** init api*/
             initAPI(this.activity.get());
+            /** request permission*/
+            PermissionHelper.requestPermission(this, PERMISSION_REQUEST_CODE, permissions);
         } else {
             Log.e(TAG, "The file 'dsbridge.js' not exist");
+            Toast.makeText(activity, "The file 'dsbridge.js' not exist", Toast.LENGTH_LONG).show();
         }
-
-        PermissionHelper.requestPermission(this, PERMISSION_REQUEST_CODE, permissions);
     }
 
     /** 加载 web view*/
