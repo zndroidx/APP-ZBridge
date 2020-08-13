@@ -132,14 +132,14 @@ public class InvokeController {
         DWebView.setWebContentsDebuggingEnabled(isDebug);
         MessageController.get().setDebug(isDebug);
 
-        PermissionHelper.requestPermission(this, PERMISSION_REQUEST_CODE, permissions);
-
         if (isHasScript()) {//检测初始化状态
             initWebView();
             initAPI(this.activity.get());
         } else {
             Log.e(TAG, "The file 'dsbridge.js' not exist");
         }
+
+        PermissionHelper.requestPermission(this, PERMISSION_REQUEST_CODE, permissions);
     }
 
     /** 加载 web view*/
