@@ -16,11 +16,7 @@ public class MessageController {
     private boolean isDebug = BuildConfig.DEBUG;
     private final String METHOD = "listener";
 
-    public static final String KEY_USB_STATUE = "usb_statue";
-    public static final String KEY_DRIVER_STATUE = "driver_statue";
-    public static final String KEY_SNIFFER_MONITOR = "sniffer_listener";
-    public static final String KEY_APK_INSTALL_STATUE = "apk_install_statue";
-    public static final String KEY_DOWNLOAD_APK_STATUE = "download_apk_statue";
+    /** onBack event of android */
     public static final String KEY_EVENT_ON_BACK = "key_event_on_back";
 
     private ZWebView webView;

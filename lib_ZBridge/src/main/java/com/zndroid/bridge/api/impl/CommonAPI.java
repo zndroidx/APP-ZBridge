@@ -12,6 +12,7 @@ import android.webkit.JavascriptInterface;
 
 import androidx.annotation.Nullable;
 import com.alibaba.fastjson.JSONObject;
+import com.zndroid.bridge.InvokeController;
 import com.zndroid.bridge.api.BaseAPI;
 import com.zndroid.bridge.framework.core.CompletionHandler;
 import com.zndroid.bridge.framework.core.DWebView;
@@ -243,6 +244,13 @@ public class CommonAPI extends BaseAPI {
         Intent intent = getIntent(object);
         if (null != intent)
             jumpToActivity(intent, true);
+    }
+
+    @JavascriptInterface
+    public void reload(Object object) {
+        String url = InvokeController.get().getOriginUrl();
+        showLog(url);
+        InvokeController.get().load(url);
     }
 
     @Override

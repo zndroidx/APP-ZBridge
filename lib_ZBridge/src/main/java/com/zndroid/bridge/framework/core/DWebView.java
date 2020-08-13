@@ -494,7 +494,7 @@ public class DWebView extends WebView {
         for (CallInfo info : callInfoList) {
             dispatchJavascriptCall(info);
         }
-        callInfoList = null;
+        callInfoList.clear();
     }
 
     private void dispatchJavascriptCall(CallInfo info) {

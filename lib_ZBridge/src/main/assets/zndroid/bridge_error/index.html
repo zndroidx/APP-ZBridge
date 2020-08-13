@@ -46,6 +46,7 @@
 				<p class="copyright">Copyright &copy; 2020.Lazy All rights reserved.</p>
 				<p>xxxxxxx</p>
 				<div class="btn" onclick="activityFinish()">关闭</div>
+				<div class="btn" onclick="reload()">重新加载</div>
 	
 			</div>
 				
@@ -57,6 +58,10 @@
 <script>
 	function activityFinish() {
         dsBridge.call("common.activityFinish");
+    }
+
+    function reload() {
+        dsBridge.call("common.reload", '');
     }
 </script>
 </html>

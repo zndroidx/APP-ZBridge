@@ -146,15 +146,23 @@ public class InvokeController {
 
     /** 加载 web view*/
     public void load(String url) {
+        this.isLoadError.set(false);
+        this.originUrl = url;//save origin url for reload...
         if (null != webView && !TextUtils.isEmpty(url)) {
             webView.loadUrl(url);
         }
     }
 
     public void load(String url, Map<String, String> additionalHttpHeaders) {
+        this.isLoadError.set(false);
+        this.originUrl = url;//save origin url for reload...
         if (null != webView && !TextUtils.isEmpty(url)) {
-            webView.loadUrl(url, additionalHttpHeaders);
+            webView.loadUrl(url, additionalHttpHeaders);webView.reload();
         }
+    }
+
+    public String getOriginUrl() {
+        return originUrl;
     }
 
     public Context getContext() {
@@ -167,7 +175,10 @@ public class InvokeController {
 
     /**
      * 设置加载失败显示的网页地址 暂不开放，逻辑处理较繁琐，
-     * 比如：用户的加载失败页面如果不是静态页面可能会加载失败，比较容易陷入死循环*/
+     * <b>墙裂建议使用静态网页</b>
+     * 比如：用户的加载失败页面如果不是静态页面可能会加载失败，比较容易陷入死循环
+     * @future
+     * */
     private void setErrorUrl(String errorUrl) {
         this.errorUrl = errorUrl;
     }
@@ -219,8 +230,6 @@ public class InvokeController {
         webView.setWebViewClient(new ZWebViewClient(){
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
-                originUrl = url;//save origin url for reload...
-
                 super.onPageStarted(view, url, favicon);
                 if (pageLoadListener != null && !isLoadError.get())//如果加载失败，不会透传该回调
                     pageLoadListener.onPageStart(url);
