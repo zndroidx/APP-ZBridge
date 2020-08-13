@@ -187,7 +187,7 @@ public class DWebView extends WebView {
         super.addJavascriptInterface(new Object() {
 
             private void PrintDebugInfo(String error) {
-                Log.d(LOG_TAG, error);
+                Log.e(LOG_TAG, error);
                 if (isDebug) {
                     evaluateJavascript(String.format("alert('%s')", "DEBUG ERR MSG:\\n" + error.replaceAll("\\'", "\\\\'")));
                 }
