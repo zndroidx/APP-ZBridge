@@ -207,6 +207,12 @@
     ////////////////// listener //////////////////
     dsBridge.register('listener', function (value) {
         console.log(value);
+        //{"key":"key_event_on_back","value":true}
+        var params = JSON.parse(value);
+        if(params.key === "key_event_on_back" && params.value === true) {
+            activityFinish();
+        }
+
     })
     
 </script>
