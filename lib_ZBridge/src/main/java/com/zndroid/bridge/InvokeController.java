@@ -65,6 +65,7 @@ public class InvokeController {
 
     private WeakReference<Context> context;
     private WeakReference<Activity> activity;
+    private Bundle savedInstanceState;
     private ZWebView webView;
 
     private NativeAPI nativeAPI;
@@ -123,22 +124,19 @@ public class InvokeController {
     public void onCreate(Activity activity, Bundle savedInstanceState, @NonNull ZWebView webView) {
         this.context = new WeakReference<>(activity.getApplicationContext());
         this.activity = new WeakReference<>(activity);
-
+        this.savedInstanceState = savedInstanceState;
         this.webView = webView;
         this.isLoadError = new AtomicBoolean(false);
 
+        this.webView.disableJavascriptDialogBlock(isDebug);
+        DWebView.setWebContentsDebuggingEnabled(isDebug);
+        MessageController.get().setDebug(isDebug);
+
         PermissionHelper.requestPermission(this, PERMISSION_REQUEST_CODE, permissions);
 
-        MessageController.get().setDebug(isDebug);
-        this.webView.disableJavascriptDialogBlock(isDebug);
-
         if (isHasScript()) {//检测初始化状态
-            if (isDebug)
-                DWebView.setWebContentsDebuggingEnabled(true);
-
             initWebView();
             initAPI(this.activity.get());
-            onCreate(savedInstanceState);
         } else {
             Log.e(TAG, "The file 'dsbridge.js' not exist");
         }
@@ -299,6 +297,8 @@ public class InvokeController {
 
     @PermissionSucceed(requestCode = PERMISSION_REQUEST_CODE)
     public void permissionOK() {
+        onCreate(savedInstanceState);
+
         if (isDebug)
             Log.i(TAG, "permission all is ok...");
         if (null != invokePermissionListener)

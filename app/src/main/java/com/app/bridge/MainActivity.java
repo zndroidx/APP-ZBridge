@@ -15,8 +15,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private final static String URL = "file:///android_asset/zndroid/test.html";
-//    private final static String URL = "https://www.baidu.com";
+//    private final static String URL = "file:///android_asset/zndroid/test.html";
+    private final static String URL = "https://www.baidu.com";
 
     private ZWebView webView;
 
