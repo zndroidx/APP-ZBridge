@@ -59,5 +59,10 @@
     function reload() {
         dsBridge.call("common.reload", '');
     }
+
+    ////////////////// listener //////////////////
+    dsBridge.register('listener', function (value) {
+        console.log(value);
+    })
 </script>
 </html>

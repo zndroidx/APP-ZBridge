@@ -491,10 +491,13 @@ public class DWebView extends WebView {
     }
 
     private synchronized void dispatchStartupQueue() {
-        for (CallInfo info : callInfoList) {
-            dispatchJavascriptCall(info);
+        if (null != callInfoList) {
+            for (CallInfo info : callInfoList) {
+                dispatchJavascriptCall(info);
+            }
         }
-        callInfoList.clear();
+
+        callInfoList = null;
     }
 
     private void dispatchJavascriptCall(CallInfo info) {

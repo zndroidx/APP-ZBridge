@@ -11,11 +11,12 @@ import android.view.View;
 import android.webkit.JavascriptInterface;
 
 import androidx.annotation.Nullable;
+
 import com.alibaba.fastjson.JSONObject;
 import com.zndroid.bridge.InvokeController;
 import com.zndroid.bridge.api.BaseAPI;
+import com.zndroid.bridge.framework.ZWebView;
 import com.zndroid.bridge.framework.core.CompletionHandler;
-import com.zndroid.bridge.framework.core.DWebView;
 import com.zndroid.bridge.util.JsonTranslator;
 import com.zndroid.bridge.util.SnackbarUtils;
 
@@ -34,13 +35,13 @@ public class CommonAPI extends BaseAPI {
 
     private CompletionHandler globalCompletionHandler;
 
-    private DWebView webView;
+    private ZWebView webView;
 
     public CommonAPI(Activity activity) {
         super(activity);
     }
 
-    public void setWebView(DWebView webView) {
+    public void setWebView(ZWebView webView) {
         this.webView = webView;
     }
 

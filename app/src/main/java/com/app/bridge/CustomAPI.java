@@ -3,7 +3,10 @@ package com.app.bridge;
 import android.app.Activity;
 import android.webkit.JavascriptInterface;
 
+import com.zndroid.bridge.MessageController;
 import com.zndroid.bridge.api.BaseAPI;
+import com.zndroid.bridge.framework.ZWebView;
+import com.zndroid.bridge.params.Message;
 
 /**
  * @name:CustomAPI
@@ -14,8 +17,13 @@ import com.zndroid.bridge.api.BaseAPI;
  * @description:TODO
  */
 public class CustomAPI extends BaseAPI {
+    private ZWebView webView;
     public CustomAPI(Activity activity) {
         super(activity);
+    }
+
+    public void setWebView(ZWebView webView) {
+        this.webView = webView;
     }
 
     @Override
@@ -26,6 +34,11 @@ public class CustomAPI extends BaseAPI {
     @JavascriptInterface
     public void custom(Object object) {
         showToast("im custom API call");
+
+        Message<String> message = new Message<>();
+        message.setKey("haha");
+        message.setValue("xxxxxxxxx");
+        MessageController.get().with(webView).sendMessage(message);
     }
 
     @Override
