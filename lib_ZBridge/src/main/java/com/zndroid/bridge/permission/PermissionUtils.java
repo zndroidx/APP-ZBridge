@@ -133,7 +133,7 @@ public class PermissionUtils {
             return ((Fragment) mObject).getActivity();
 
         if (mObject instanceof InvokeController)
-            return InvokeController.get().getActivity();
+            return ((InvokeController)mObject).getActivity();
         return null;
     }
 

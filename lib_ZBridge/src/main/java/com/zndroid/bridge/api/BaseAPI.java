@@ -9,22 +9,23 @@ import androidx.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.zndroid.bridge.BuildConfig;
-import com.zndroid.bridge.InvokeController;
-
 import java.lang.ref.WeakReference;
 
 /**
  * Created by lazy on 2019-09-21
  */
 public abstract class BaseAPI implements LifecycleCallBack {
-    private boolean isDebug = InvokeController.get().isDebug();
+    private boolean isDebug;
     protected WeakReference<Context> context;
     protected WeakReference<Activity> activity;
 
     public BaseAPI(Activity activity) {
         this.activity = new WeakReference<>(activity);
         this.context = new WeakReference<>(activity.getApplicationContext());
+    }
+
+    public void setDebug(boolean debug) {
+        isDebug = debug;
     }
 
     protected void showLog(String msg) {

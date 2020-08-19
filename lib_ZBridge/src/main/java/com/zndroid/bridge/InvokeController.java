@@ -150,6 +150,7 @@ public class InvokeController {
     public void load(String url) {
         this.isLoadError.set(false);
         this.originUrl = url;//save origin url for reload...
+        commonAPI.setOriginUrl(originUrl);
         if (null != webView && !TextUtils.isEmpty(url)) {
             webView.loadUrl(url);
         }
@@ -158,13 +159,10 @@ public class InvokeController {
     public void load(String url, Map<String, String> additionalHttpHeaders) {
         this.isLoadError.set(false);
         this.originUrl = url;//save origin url for reload...
+        commonAPI.setOriginUrl(originUrl);
         if (null != webView && !TextUtils.isEmpty(url)) {
             webView.loadUrl(url, additionalHttpHeaders);webView.reload();
         }
-    }
-
-    public String getOriginUrl() {
-        return originUrl;
     }
 
     public Context getContext() {
@@ -198,8 +196,11 @@ public class InvokeController {
     /** 初始化API*/
     private void initAPI(Activity activity) {
         nativeAPI = new NativeAPI(activity);
+
         commonAPI = new CommonAPI(activity);
         commonAPI.setWebView(webView);
+        commonAPI.setInvokeController(this);
+
         debugAPI = new DebugAPI(activity);
 
         apiMaps.put(nativeAPI, NameSpace.NATIVE.getValue());
@@ -317,23 +318,11 @@ public class InvokeController {
             invokePermissionListener.onPermissionRefused(PermissionUtils.getDeniedPermissions(this, permissions));
     }
 
-    //////////////////////// get instance ////////////////////////
-    private InvokeController() {}
-
-    private static class $ {
-        private static InvokeController $$ = new InvokeController();
-    }
-
-    public static InvokeController get() {
-        return $.$$;
-    }
-    //////////////////////// get instance ////////////////////////
-
-
     //////////////////////// 生命周期处理 ////////////////////////
     private void onCreate(Bundle savedInstanceState) {
         if (apiMaps != null) {
             for (BaseAPI baseAPI : apiMaps.keySet()) {
+                baseAPI.setDebug(isDebug);
                 baseAPI.onCreate(savedInstanceState);
             }
         }

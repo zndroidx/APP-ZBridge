@@ -15,10 +15,11 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-//    private final static String URL = "file:///android_asset/zndroid/test.html";
-    private final static String URL = "https://www.baidu.com";
+    private final static String URL = "file:///android_asset/zndroid/test.html";
+//    private final static String URL = "http://www.baidu.com";
 
     private ZWebView webView;
+    private InvokeController invokeController;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,15 +28,17 @@ public class MainActivity extends AppCompatActivity {
 
         webView = findViewById(R.id.web_view);
 
+        invokeController = new InvokeController();
+
         //可选
-        InvokeController.get().setDebug(true);
+        invokeController.setDebug(true);
         //可选 根据宿主业务逻辑处理自定义API
         CustomAPI customAPI = new CustomAPI(this);
         customAPI.setWebView(webView);
-        InvokeController.get().addAPI(customAPI, "test");
+        invokeController.addAPI(customAPI, "test");
 
         //可选
-        InvokeController.get().setPageLoadListener(new InvokeController.PageLoadListener() {
+        invokeController.setPageLoadListener(new InvokeController.PageLoadListener() {
             @Override
             public void onPageStart(String url) {
                 Log.i("bridge", "start=" + url);
@@ -53,11 +56,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //可选（先设置回调，再请求权限，否则因为多线程的原因导致回调时机错乱从而loadURL无效）
-        InvokeController.get().setInvokePermissionListener(new InvokeController.InvokePermissionListener() {
+        invokeController.setInvokePermissionListener(new InvokeController.InvokePermissionListener() {
             @Override
             public void onPermissionGranted() {
                 //must
-                InvokeController.get().load(URL);
+                invokeController.load(URL);
             }
 
             @Override
@@ -68,52 +71,52 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //must
-        InvokeController.get().onCreate(this, savedInstanceState, webView);
+        invokeController.onCreate(this, savedInstanceState, webView);
     }
 
     @Override
     protected void onDestroy() {
         //must
-        InvokeController.get().onDestroy();
+        invokeController.onDestroy();
         super.onDestroy();
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         //must
-        InvokeController.get().onActivityResult(requestCode, resultCode, data);
+        invokeController.onActivityResult(requestCode, resultCode, data);
         super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     public void onBackPressed() {
         //must
-        InvokeController.get().onBackPressed();
+        invokeController.onBackPressed();
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         //must
-        InvokeController.get().onSaveInstanceState(outState);
+        invokeController.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //must
-        InvokeController.get().onRequestPermissionsResult(requestCode, permissions, grantResults);
+        invokeController.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        InvokeController.get().onResume();
+        invokeController.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        InvokeController.get().onPause();
+        invokeController.onPause();
     }
 }

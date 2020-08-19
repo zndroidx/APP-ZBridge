@@ -32,6 +32,8 @@ public class CommonAPI extends BaseAPI {
 
     public final static int REQUEST_CODE = 207;
     public final static String REQUEST_DATA = "key_data";
+    private String originUrl;
+    private InvokeController invokeController;
 
     private CompletionHandler globalCompletionHandler;
 
@@ -43,6 +45,14 @@ public class CommonAPI extends BaseAPI {
 
     public void setWebView(ZWebView webView) {
         this.webView = webView;
+    }
+
+    public void setOriginUrl(String originUrl) {
+        this.originUrl = originUrl;
+    }
+
+    public void setInvokeController(InvokeController invokeController) {
+        this.invokeController = invokeController;
     }
 
     @Override
@@ -249,9 +259,9 @@ public class CommonAPI extends BaseAPI {
 
     @JavascriptInterface
     public void reload(Object object) {
-        String url = InvokeController.get().getOriginUrl();
-        showLog(url);
-        InvokeController.get().load(url);
+        showLog("reload=" + originUrl);
+        if (!TextUtils.isEmpty(originUrl) && null != invokeController)
+            invokeController.load(originUrl);
     }
 
     @Override
